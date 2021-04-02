@@ -11,8 +11,7 @@ graphManager = GraphManager()
 graphManager.LoadData('src\\Data.ymal')
 graphManager.SetInitCurrency('o')
 graphManager.SetTermCurrency('d')
-
-print(graphManager.GetStock('1inch', 'df'))
+graphManager.GenerateIndices()
 
 exactModelBuilder = ExactModelBuilder(graphManager)
 

@@ -1,5 +1,4 @@
-from os import error
-from yaml import load, dump, Loader, Dumper
+from yaml import load, Loader
 
 
 class Exchange:
@@ -20,6 +19,8 @@ class GraphManager:
         self.termCurrency = None
         self.exchanges = {}
         self.currencies = set()
+        self.indexCurrencies = {}
+        self.indexExchanges = {}
 
     def AddExchange(self, exchange=Exchange) -> None:
         self.exchanges[exchange.nameExchange] = exchange
@@ -50,5 +51,12 @@ class GraphManager:
 
         if currency not in self.exchanges[nameExchange].stocks:
             raise Exception("No currency named {} found in exchange named {}".format(currency, nameExchange))
-            
+
         return self.exchanges[nameExchange].stocks[currency]
+
+    def GenerateIndices(self) -> None:
+        for currency in self.currencies:
+            self.indexCurrencies[len(self.indexCurrencies)+1] = currency
+        
+        for exchange in self.exchanges:
+            self.indexExchanges[len(self.indexExchanges)+1] = exchange
