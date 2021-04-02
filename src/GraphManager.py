@@ -45,6 +45,9 @@ class GraphManager:
     def SetTermCurrency(self, termCurrency: str) -> None:
         self.termCurrency = termCurrency
 
+    def SetInitCurrencyQuantity(self, initCurrencyQuantity: float) -> None:
+        self.T0 = initCurrencyQuantity
+
     def GetStock(self, nameExchange: str, currency: str) -> float:
         if nameExchange not in self.exchanges:
             raise Exception("No exchange named {} found".format(nameExchange))
@@ -54,9 +57,9 @@ class GraphManager:
 
         return self.exchanges[nameExchange].stocks[currency]
 
-    def GenerateIndices(self) -> None:
-        for currency in self.currencies:
-            self.indexCurrencies[len(self.indexCurrencies)+1] = currency
+    # def GenerateIndices(self) -> None:
+    #     for currency in self.currencies:
+    #         self.indexCurrencies[len(self.indexCurrencies)+1] = currency
         
-        for exchange in self.exchanges:
-            self.indexExchanges[len(self.indexExchanges)+1] = exchange
+    #     for exchange in self.exchanges:
+    #         self.indexExchanges[len(self.indexExchanges)+1] = exchange

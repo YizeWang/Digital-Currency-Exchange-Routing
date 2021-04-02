@@ -11,8 +11,17 @@ graphManager = GraphManager()
 graphManager.LoadData('src\\Data.ymal')
 graphManager.SetInitCurrency('o')
 graphManager.SetTermCurrency('d')
-graphManager.GenerateIndices()
+graphManager.SetInitCurrencyQuantity(1.0)
+# graphManager.GenerateIndices()
 
 exactModelBuilder = ExactModelBuilder(graphManager)
+exactModelBuilder.DeclareDecisionVariables()
+exactModelBuilder.SetObjective()
+exactModelBuilder.SetFractionConstraint()
+exactModelBuilder.SetInitCurrencyConstraint()
+exactModelBuilder.SetTermCurrencyConstraint()
+exactModelBuilder.SetConservationConstraint()
+exactModelBuilder.Optimize()
+exactModelBuilder.OutputResult()
 
 pass
