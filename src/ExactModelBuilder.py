@@ -10,6 +10,11 @@ class ExactModelBuilder:
         self.G = graphManager
         self.model = gp.Model("Exact Model Builder")
         self.model.Params.NonConvex = 2
+        self.M = 1e4
+
+    def SetBigM(self, M: float) -> None:
+        self.M = M
+
 
     def DeclareDecisionVariables(self) -> None:
         self.X, self.Y, self.F, self.U, self.Z = {}, {}, {}, {}, {}
@@ -24,7 +29,8 @@ class ExactModelBuilder:
                     self.Y[i, j, k] = self.model.addVar(vtype=GRB.BINARY,           name="Y(%s, %s, %s)" % (i, j, k))
 
     def SetObjective(self) -> None:
-        gp.quicksum(gp.quicksum(self.F[i, self.G.termCurrency, k] for i in self.G.currencies) for k in self.G.exchanges)
+        obj = gp.quicksum(gp.quicksum(self.F[i, self.G.termCurrency, k] for i in self.G.currencies) for k in self.G.exchanges)
+        self.model.setObjective(obj, sense=GRB.MAXIMIZE)
 
     def SetFractionConstraint(self) -> None:
         self.model.addConstrs(self.F[i, j, k] * (self.G.GetStock(k, i) + self.X[i, j, k]) == self.G.GetStock(k, j) * self.X[i, j, k]for i in self.G.currencies for j in self.G.currencies for k in self.G.exchanges)
@@ -49,8 +55,10 @@ class ExactModelBuilder:
         pass
 
     def SetCycleEliminationConstraint(self) -> None:
-        pass
-
+        self.model.addConstrs(self.U[i] - self.U[j] + self.Z[i, j] <= self.M - 1 for i in self.G.currencies for j in self.G.currencies)
+        self.model.addConstrs(self.Z[i, j] <= gp.quicksum(self.Y[i ,j, k] * self.M for k in self.G.exchanges) for i in self.G.currencies for j in self.G.currencies)
+        self.model.addConstrs(gp.quicksum(self.Y[i ,j, k] * self.M for k in self.G.exchanges) <= self.Z[i, j] * self.M  for i in self.G.currencies for j in self.G.currencies)
+        
     def Optimize(self) -> None:
         self.model.optimize()
 
@@ -59,4 +67,6 @@ class ExactModelBuilder:
             raise Exception("No feasible solution")
 
         for var in self.model.getVars():
-            print('%s %g' % (var.varName, var.x))
+            print('%s = %g' % (var.varName, var.x))
+
+        print('Optimal objective = {}'.format(self.model.objVal))

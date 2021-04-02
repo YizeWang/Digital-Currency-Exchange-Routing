@@ -8,10 +8,11 @@ from yaml import Loader, Dumper
 
 
 graphManager = GraphManager()
-graphManager.LoadData('src\\Data.ymal')
+graphManager.LoadData('src\\Data2.ymal')
 graphManager.SetInitCurrency('o')
 graphManager.SetTermCurrency('d')
 graphManager.SetInitCurrencyQuantity(1.0)
+graphManager.SetFeeLimit(float('inf'))
 # graphManager.GenerateIndices()
 
 exactModelBuilder = ExactModelBuilder(graphManager)
@@ -21,6 +22,7 @@ exactModelBuilder.SetFractionConstraint()
 exactModelBuilder.SetInitCurrencyConstraint()
 exactModelBuilder.SetTermCurrencyConstraint()
 exactModelBuilder.SetConservationConstraint()
+exactModelBuilder.SetCycleEliminationConstraint()
 exactModelBuilder.Optimize()
 exactModelBuilder.OutputResult()
 

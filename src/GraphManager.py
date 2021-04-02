@@ -17,6 +17,7 @@ class GraphManager:
         self.numExchanges = None
         self.initCurrency = None
         self.termCurrency = None
+        self.feeLimit = float('inf')
         self.exchanges = {}
         self.currencies = set()
         self.indexCurrencies = {}
@@ -47,6 +48,9 @@ class GraphManager:
 
     def SetInitCurrencyQuantity(self, initCurrencyQuantity: float) -> None:
         self.T0 = initCurrencyQuantity
+
+    def SetFeeLimit(self, feeLimit: float) -> None:
+        self.feeLimit = feeLimit
 
     def GetStock(self, nameExchange: str, currency: str) -> float:
         if nameExchange not in self.exchanges:

@@ -1,0 +1,10 @@
+- nameExchange: K1
+  stocks: 
+    o: 8.0
+    d: 2.0
+    m: 4.0
+- nameExchange: K2
+  stocks: 
+    o: 10.0
+    d: 2.5
+    m: 5.0
