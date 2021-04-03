@@ -3,7 +3,7 @@ from ExactModelSolver import ExactModelSolver
 
 
 verbose = True
-pathData = 'src\\DataCase1.ymal'
+pathData = 'src\\DataCase2.ymal'
 
 graphManager = GraphManager()
 graphManager.LoadData(pathData)

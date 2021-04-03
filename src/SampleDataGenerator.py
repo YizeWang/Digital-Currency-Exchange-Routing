@@ -1,4 +1,3 @@
-import uuid
 from yaml import dump, Dumper
 from GraphManager import Exchange
 from random import uniform
@@ -18,19 +17,16 @@ class SampleDataGenerator:
     def SetNumExchanges(self, numExchanges: int) -> None:
         self.__numExchanges = numExchanges
 
-    def GetId(self) -> str:
-        return str(uuid.uuid1())
-
     def Rand(self, lb: float, ub: float) -> float:
         return uniform(lb, ub)
 
     def GenerateData(self) -> None:
-        self.__currencies = set(self.GetId() for i in range(self.__numCurrencies - 2))  # reserve two places for initial and terminal currency
+        self.__currencies = set('c'+str(i+1) for i in range(self.__numCurrencies-2))  # reserve two places for initial and terminal currency
         self.__currencies.add('o')
         self.__currencies.add('d')
 
         for k in range(self.__numExchanges):
-            nameExchange = self.GetId()
+            nameExchange = 'K'+str(k+1)
             stocks = {}
             for currency in self.__currencies:
                 stocks[currency] = self.Rand(1.0, 10.0)

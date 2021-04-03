@@ -72,13 +72,13 @@ class ExactModelSolver:
         timeStart = time.time()
         self.__DeclareDecisionVariables()
         self.__SetFractionConstraint()
-        self.__SetObjective()                   # (1)
-        self.__SetInitCurrencyConstraint()      # (2, 4)
-        self.__SetTermCurrencyConstraint()      # (3)
-        self.__SetConservationConstraint()      # (5, 6)
-        self.__SetProcessingFeeConstraint()     # (7)
-        self.__SetYConstraint()                 # (8, 9)
-        self.__SetCycleEliminationConstraint()  # (10, 11, 12)
+        self.__SetObjective()
+        self.__SetInitCurrencyConstraint()
+        self.__SetTermCurrencyConstraint()
+        self.__SetConservationConstraint()
+        # self.__SetProcessingFeeConstraint()
+        self.__SetYConstraint()
+        self.__SetCycleEliminationConstraint()
         self.__timeSetup = time.time() - timeStart
 
     def Optimize(self) -> None:

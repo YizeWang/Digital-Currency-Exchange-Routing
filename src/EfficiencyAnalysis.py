@@ -8,9 +8,9 @@ pathData = 'src\\TestData.ymal'
 verbose = False
 
 minNumCurrencies = 2  # at least 2
-maxNumCurrencies = 5
-minNumExchanges = 5  # at least 1
-maxNumExchanges = 14
+maxNumCurrencies = 4
+minNumExchanges = 1  # at least 1
+maxNumExchanges = 4
 
 timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col: exchange; key: time consumed
 
@@ -32,6 +32,6 @@ for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
         EMS.Update()
         EMS.Optimize()
         
-        timeTable[numCurrencies, numExchanges] = EMS.OutputResult()
+        timeTable[numCurrencies-1, numExchanges-1] = EMS.OutputResult()
         print(timeTable)
         np.savetxt("TimeTable.csv", timeTable, delimiter=',')
