@@ -7,7 +7,7 @@ from yaml import load, dump
 from yaml import Loader, Dumper
 
 
-verbose = False
+verbose = True
 pathData = 'src\\Data3.ymal'
 
 graphManager = GraphManager()
