@@ -144,3 +144,6 @@ dmypy.json
 __pycache__/
 *.py[cod]
 *$py.class
+
+TimeTable.csv
+TestData.ymal

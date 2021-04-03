@@ -1,20 +1,20 @@
 import time
-import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
 from GraphManager import GraphManager
 
 
-class ExactModelBuilder:
+class ExactModelSolver:
 
     def __init__(self, graphManager: GraphManager, verbose=True) -> None:
         self.__G = graphManager
-        self.__model = gp.Model("Exact Model Builder")
+        self.__model = gp.Model("Exact Model Solver")
         self.__model.Params.NonConvex = 2
         self.__model.Params.OutputFlag = verbose
         self.__M = 1e3
         self.__timeSetup = None
         self.__timeOptimization = None
+        self.__verbose = verbose
 
     def SetBigM(self, M: float) -> None:
         self.__M = M
@@ -86,16 +86,19 @@ class ExactModelBuilder:
         self.__model.optimize()
         self.__timeOptimization = time.time() - timeStart
 
-    def OutputResult(self) -> None:
+    def OutputResult(self) -> float:
         if self.__model.status != GRB.OPTIMAL:
             raise Exception("No feasible solution")
 
-        for var in self.__model.getVars():
-            print('%s = %g' % (var.varName, var.x))
+        if self.__verbose:
+            for var in self.__model.getVars():
+                print('%s = %g' % (var.varName, var.x))
 
-        self.__model.printStats()
+            self.__model.printStats()
+            
         print('Optimal objective: {} {}'.format(self.__model.objVal, self.__G.GetTermCurrency()))
         print('Modeling time: {} seconds'.format(self.__timeSetup))
         print('Solving time: {} seconds'.format(self.__timeOptimization))
         print('Number of decision variables: {}'.format(len(self.__model.getVars())))
-    
+
+        return self.__timeOptimization
