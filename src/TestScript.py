@@ -7,22 +7,18 @@ from yaml import load, dump
 from yaml import Loader, Dumper
 
 
+verbose = False
+pathData = 'src\\Data3.ymal'
+
 graphManager = GraphManager()
-graphManager.LoadData('src\\Data2.ymal')
+graphManager.LoadData(pathData)
 graphManager.SetInitCurrency('o')
 graphManager.SetTermCurrency('d')
 graphManager.SetInitCurrencyQuantity(1.0)
 graphManager.SetFeeLimit(float('inf'))
-# graphManager.GenerateIndices()
 
-exactModelBuilder = ExactModelBuilder(graphManager)
-exactModelBuilder.DeclareDecisionVariables()
-exactModelBuilder.SetObjective()
-exactModelBuilder.SetFractionConstraint()
-exactModelBuilder.SetInitCurrencyConstraint()
-exactModelBuilder.SetTermCurrencyConstraint()
-exactModelBuilder.SetConservationConstraint()
-exactModelBuilder.SetCycleEliminationConstraint()
+exactModelBuilder = ExactModelBuilder(graphManager, verbose=verbose)
+exactModelBuilder.Update()
 exactModelBuilder.Optimize()
 exactModelBuilder.OutputResult()
 

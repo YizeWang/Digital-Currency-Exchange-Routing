@@ -20,10 +20,8 @@ class GraphManager:
         self.feeLimit = float('inf')
         self.exchanges = {}
         self.currencies = set()
-        self.indexCurrencies = {}
-        self.indexExchanges = {}
 
-    def AddExchange(self, exchange=Exchange) -> None:
+    def __AddExchange(self, exchange=Exchange) -> None:
         self.exchanges[exchange.nameExchange] = exchange
 
     def LoadData(self, pathData: str) -> None:
@@ -33,9 +31,9 @@ class GraphManager:
         for exchange in data:
             currExchange = Exchange(exchange['nameExchange'])
             for currency in exchange['stocks']:
-                if currency not in self.currencies: self.currencies.add(currency)
+                self.currencies.add(currency)  # keep record of currency kinds
                 currExchange.AddStock(currency, exchange['stocks'][currency])
-            self.AddExchange(currExchange)
+            self.__AddExchange(currExchange)  # keep record of exchange kinds
 
         self.numExchanges = len(self.exchanges)
         self.numCurrencies = len(self.currencies)
@@ -60,10 +58,3 @@ class GraphManager:
             raise Exception("No currency named {} found in exchange named {}".format(currency, nameExchange))
 
         return self.exchanges[nameExchange].stocks[currency]
-
-    # def GenerateIndices(self) -> None:
-    #     for currency in self.currencies:
-    #         self.indexCurrencies[len(self.indexCurrencies)+1] = currency
-        
-    #     for exchange in self.exchanges:
-    #         self.indexExchanges[len(self.indexExchanges)+1] = exchange
