@@ -1,7 +1,5 @@
 from GraphManager import GraphManager
 from ExactModelSolver import ExactModelSolver
-from ExactModelSolver1 import ExactModelSolver1
-from ExactModelSolver2 import ExactModelSolver2
 
 
 verbose = True
