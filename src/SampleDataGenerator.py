@@ -27,9 +27,11 @@ class SampleDataGenerator:
 
         for k in range(self.__numExchanges):
             nameExchange = 'K'+str(k+1)
+
             stocks = {}
             for currency in self.__currencies:
                 stocks[currency] = self.Rand(1.0, 10.0)
+            
             B1 = {}
             B2 = {}
             for initCurrency in self.__currencies:
@@ -38,6 +40,7 @@ class SampleDataGenerator:
                 for termCurrency in self.__currencies:
                     B1[initCurrency][termCurrency] = 0.0
                     B2[initCurrency][termCurrency] = 0.0
+            
             exchange = {'nameExchange': nameExchange, 'stocks': stocks, 'B1': B1, 'B2': B2}
             self.__data.append(exchange)
 

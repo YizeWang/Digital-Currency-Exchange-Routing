@@ -107,7 +107,7 @@ class GraphManager:
     def GetStock(self, nameExchange: str, currency: str) -> float:
         if nameExchange not in self.__exchanges:
             raise Exception("No exchange named {} found".format(nameExchange))
-
+        
         if currency not in self.__exchanges[nameExchange].GetStocks():
             raise Exception("No currency named {} found in exchange named {}".format(currency, nameExchange))
 

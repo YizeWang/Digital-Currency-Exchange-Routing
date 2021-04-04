@@ -110,10 +110,10 @@ class ExactModelSolver:
                 print('%s = %g' % (var.varName, var.x))
 
             self.__model.printStats()
-            
+        
         print('Optimal objective: {} {}'.format(self.__model.objVal, self.__G.GetTermCurrency()))
         print('Modeling time: {} seconds'.format(self.__timeSetup))
         print('Solving time: {} seconds'.format(self.__timeOptimization))
         print('Number of decision variables: {}'.format(len(self.__model.getVars())))
-
+        
         return self.__timeOptimization

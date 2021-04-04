@@ -1,7 +1,7 @@
-from SampleDataGenerator import SampleDataGenerator
-from GraphManager import Exchange, GraphManager
-from ExactModelSolver import ExactModelSolver
 import numpy as np
+from GraphManager import GraphManager
+from ExactModelSolver import ExactModelSolver
+from SampleDataGenerator import SampleDataGenerator
 
 
 pathData = 'src\\TestData.ymal'
