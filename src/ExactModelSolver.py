@@ -25,11 +25,11 @@ class ExactModelSolver:
         for i in self.__G.GetCurrencies():
             self.__U[i] = self.__model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="U(%s)" % (i))
             for j in self.__G.GetCurrencies():
-                self.__Z[i, j] = self.__model.addVar(vtype=GRB.BINARY, name="Z(%s, %s)" % (i, j))
+                self.__Z[i, j] = self.__model.addVar(vtype=GRB.BINARY, name="Z(%s,%s)" % (i, j))
                 for k in self.__G.GetExchanges():
-                    self.__X[i, j, k] = self.__model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="X(%s, %s, %s)" % (i, j, k))
-                    self.__F[i, j, k] = self.__model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="F(%s, %s, %s)" % (i, j, k))  # value of fraction
-                    self.__Y[i, j, k] = self.__model.addVar(vtype=GRB.BINARY,           name="Y(%s, %s, %s)" % (i, j, k))
+                    self.__X[i, j, k] = self.__model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="X(%s,%s,%s)" % (i, j, k))
+                    self.__F[i, j, k] = self.__model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="F(%s,%s,%s)" % (i, j, k))  # value of fraction
+                    self.__Y[i, j, k] = self.__model.addVar(vtype=GRB.BINARY,           name="Y(%s,%s,%s)" % (i, j, k))
 
     def __SetObjective(self) -> None:
         obj = gp.quicksum(self.__F[i, self.__G.GetTermCurrency(), k] for i in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
@@ -85,6 +85,9 @@ class ExactModelSolver:
         timeStart = time.time()
         self.__model.optimize()
         self.__timeOptimization = time.time() - timeStart
+
+    def Export(self, pathExport: str) -> None:
+        self.__model.write(pathExport)
 
     def OutputResult(self) -> float:
         if self.__model.status != GRB.OPTIMAL:
