@@ -9,6 +9,7 @@ class Exchange:
         self.__B1s = {}  # on-off based processing fees
         self.__B2s = {}  # quantity based processing fees
 
+    # add a currency (name and stock) to exchange
     def AddStock(self, currency: str, stock: float) -> None:
         self.__stocks[currency] = stock
 
@@ -27,9 +28,11 @@ class Exchange:
     def GetB2(self, initCurrency: str, termCurrency: str) -> float:
         return self.__B2s[(initCurrency, termCurrency)]
 
+    # get "currency - stock" dictionary
     def GetStocks(self) -> dict:
         return self.__stocks
 
+    # get stock of a currency
     def GetStock(self, currency: str) -> float:
         return self.__stocks[currency]
 
@@ -76,6 +79,7 @@ class GraphManager:
         with open(pathData, 'r') as dataFile:
             data = load(dataFile, Loader=Loader)
         
+        # iterate exchanges in data, store currency name, stock, processing fee B1 and B2
         for exchange in data:
             currExchange = Exchange(exchange['nameExchange'])
             for currency in exchange['stocks']:

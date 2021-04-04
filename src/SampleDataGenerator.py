@@ -44,6 +44,3 @@ class SampleDataGenerator:
     def DumpData(self, pathData: str) -> None:
         with open(pathData, 'w') as dataFile:
             dump(self.__data, dataFile, Dumper=Dumper)
-
-    def GetRandomInitCurrency(self) -> str:
-        return self.__currencies

@@ -14,6 +14,7 @@ maxNumExchanges = 4
 
 timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col: exchange; key: time consumed
 
+# for all pairs of (#E, #C), generate random data and solve
 for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
     for numExchanges in range(minNumExchanges, maxNumExchanges+1):
         SDG = SampleDataGenerator()
@@ -33,5 +34,5 @@ for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
         EMS.Optimize()
         
         timeTable[numCurrencies-1, numExchanges-1] = EMS.OutputResult()
-        print(timeTable)
-        np.savetxt("TimeTable.csv", timeTable, delimiter=',')
+        
+np.savetxt("TimeTable.csv", timeTable, delimiter=',')

@@ -2,20 +2,20 @@ from GraphManager import GraphManager
 from ExactModelSolver import ExactModelSolver
 
 
-verbose = True
-pathData = 'src\\TestData.ymal'
+verbose = True  # print verbose log or not
+pathData = 'src\\DataCase1.ymal'
 
-graphManager = GraphManager()
-graphManager.LoadData(pathData)
-graphManager.SetInitCurrency('o')
-graphManager.SetTermCurrency('d')
-graphManager.SetInitCurrencyQuantity(1.0)
-graphManager.SetFeeLimit(float('inf'))
+graphManager = GraphManager()  # graph manager to store info of exchanges
+graphManager.LoadData(pathData)  # load data from ymal file
+graphManager.SetInitCurrency('o')  # set initial currency
+graphManager.SetTermCurrency('d')  # set terminal currency
+graphManager.SetInitCurrencyQuantity(1.0)  # set quantity of initial currency
+graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
 
 exactModelSolver = ExactModelSolver(graphManager, verbose=verbose)
-exactModelSolver.Update()
-exactModelSolver.Export('Model.mps')
-exactModelSolver.Optimize()
-exactModelSolver.OutputResult()
+exactModelSolver.Update()  # add constraints to optimization model
+exactModelSolver.Export('Model.mps')  # export model information
+exactModelSolver.Optimize()  # solve optimization model
+exactModelSolver.OutputResult()  # print results
 
 pass
