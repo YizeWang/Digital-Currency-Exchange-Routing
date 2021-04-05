@@ -32,6 +32,19 @@ class ExactModelSolver:
                     self.__F[i, j, k] = self.__model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="F(%s,%s,%s)" % (i, j, k))  # value of fraction
                     self.__Y[i, j, k] = self.__model.addVar(vtype=GRB.BINARY,           name="Y(%s,%s,%s)" % (i, j, k))
 
+    # add upper bound constraint to improve solving time
+    def __AddUpperBound(self) -> None:
+        totalStocks = {currency: 0.0 for currency in self.__G.GetCurrencies()}
+
+        # collect global stock of currencies
+        for exchange in self.__G.GetExchanges():
+            for currency in self.__G.GetCurrencies():
+                totalStocks[currency] = totalStocks[currency] + self.__G.GetStock(exchange, currency)
+
+        self.__model.addConstrs(self.__X[self.__G.GetInitCurrency(), j, k] <= self.__G.GetT0() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
+        self.__model.addConstrs(self.__X[i, j, k] <= totalStocks[i] for i in self.__G.GetCurrencies() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
+        self.__model.addConstrs(self.__F[i, j, k] <= totalStocks[j] for i in self.__G.GetCurrencies() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
+
     def __SetObjective(self) -> None:
         obj = gp.quicksum(self.__F[i, self.__G.GetTermCurrency(), k] for i in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
         self.__model.setObjective(obj, sense=GRB.MAXIMIZE)
@@ -80,6 +93,7 @@ class ExactModelSolver:
     def Update(self) -> None:
         timeStart = time.time()
         self.__DeclareDecisionVariables()
+        self.__AddUpperBound()
         self.__SetFractionConstraint()
         self.__SetObjective()
         self.__SetInitCurrencyConstraint()

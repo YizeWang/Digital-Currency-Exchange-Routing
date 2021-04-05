@@ -4,19 +4,21 @@ from ExactModelSolver import ExactModelSolver
 from SampleDataGenerator import SampleDataGenerator
 
 
-pathData = 'src\\TestData.ymal'
-verbose = False
+verbose = True
 
 minNumCurrencies = 2  # at least 2
-maxNumCurrencies = 4
+maxNumCurrencies = 5
 minNumExchanges = 1  # at least 1
-maxNumExchanges = 4
+maxNumExchanges = 9
 
 timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col: exchange; key: time consumed
 
 # for all pairs of (#E, #C), generate random data and solve
 for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
     for numExchanges in range(minNumExchanges, maxNumExchanges+1):
+        
+        pathData = 'src\\TestData' + 'E' + str(numExchanges) + 'C' + str(numCurrencies) + '.ymal'
+
         SDG = SampleDataGenerator()
         SDG.SetNumCurrencies(numCurrencies)
         SDG.SetNumExchanges(numExchanges)
@@ -34,5 +36,4 @@ for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
         EMS.Optimize()
         
         timeTable[numCurrencies-1, numExchanges-1] = EMS.OutputResult()
-        
-np.savetxt("TimeTable.csv", timeTable, delimiter=',')
+        np.savetxt("TempTimeTable.csv", timeTable, delimiter=',')
