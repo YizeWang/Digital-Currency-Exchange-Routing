@@ -13,6 +13,7 @@ graphManager.SetInitCurrencyQuantity(1.0)  # set quantity of initial currency
 graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
 
 exactModelSolver = ExactModelSolver(graphManager, verbose=verbose)
+exactModelSolver.SetMIPGap(1e-4)  # set MIPGap parameter for gurobi model
 exactModelSolver.Update()  # add constraints to optimization model
 exactModelSolver.Export('Model.mps')  # export model information
 exactModelSolver.Optimize()  # solve optimization model
