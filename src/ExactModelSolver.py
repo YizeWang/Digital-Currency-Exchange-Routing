@@ -19,6 +19,9 @@ class ExactModelSolver:
     def SetBigM(self, M: float) -> None:
         self.__M = M
 
+    def SetMIPGap(self, MIPGap: float) -> None:
+        self.__model.Params.MIPGap = MIPGap
+
     # declare gurobi decision variables based on model size: (#currency, #exchange)
     def __DeclareDecisionVariables(self) -> None:
         self.__X, self.__Y, self.__F, self.__U, self.__Z = {}, {}, {}, {}, {}
