@@ -42,11 +42,12 @@ class ExactModelSolver:
         # collect global stock of currencies
         for exchange in self.__G.GetExchanges():
             for currency in self.__G.GetCurrencies():
-                totalStocks[currency] = totalStocks[currency] + self.__G.GetStock(exchange, currency)
+                if currency != self.__G.GetInitCurrency():
+                    totalStocks[currency] = totalStocks[currency] + self.__G.GetStock(exchange, currency)
 
-        self.__model.addConstrs(self.__X[self.__G.GetInitCurrency(), j, k] <= self.__G.GetT0() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
-        self.__model.addConstrs(self.__X[i, j, k] <= totalStocks[i] for i in self.__G.GetCurrencies() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
-        self.__model.addConstrs(self.__F[i, j, k] <= totalStocks[j] for i in self.__G.GetCurrencies() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
+        self.__model.addConstrs(self.__X[self.__G.GetInitCurrency(), j, k] <= self.__G.GetT0()                                           for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
+        self.__model.addConstrs(self.__X[i, j, k] <= totalStocks[i] for i in self.__G.GetCurrencies() if i != self.__G.GetInitCurrency() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
+        self.__model.addConstrs(self.__F[i, j, k] <= totalStocks[j] for i in self.__G.GetCurrencies()                                    for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
 
     def __SetObjective(self) -> None:
         obj = gp.quicksum(self.__F[i, self.__G.GetTermCurrency(), k] for i in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
