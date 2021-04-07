@@ -9,9 +9,9 @@ verbose = True
 if not os.path.exists('src\\TestData\\'): os.mkdir('src\\TestData\\')
 
 minNumCurrencies = 2  # at least 2
-maxNumCurrencies = 5
+maxNumCurrencies = 10
 minNumExchanges = 1  # at least 1
-maxNumExchanges = 1
+maxNumExchanges = 10
 
 timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col: exchange; key: time consumed
 
@@ -34,7 +34,7 @@ for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
         GM.SetInitCurrencyQuantity(1.0)
 
         EMS = ExactModelSolver(GM, verbose=verbose)
-        EMS.SetMIPGap(1e-2)
+        EMS.SetMIPGap(2e-2)
         EMS.Update()
         EMS.Optimize()
         

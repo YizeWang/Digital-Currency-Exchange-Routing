@@ -121,3 +121,7 @@ class GraphManager:
 
     def GetExchange(self, nameExchange: str) -> Exchange:
         return self.__exchanges[nameExchange]
+
+    def GetMidCurrencies(self) -> set:
+        midCurrencies = (currency for currency in self.GetCurrencies() if currency not in (self.GetInitCurrency(), self.GetTermCurrency()))
+        return midCurrencies

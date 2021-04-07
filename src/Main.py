@@ -3,7 +3,7 @@ from ExactModelSolver import ExactModelSolver
 
 
 verbose = True  # print verbose log or not
-pathData = 'src\\DataCase1.ymal'
+pathData = 'src\\Cases\\DataCase1.ymal'
 
 graphManager = GraphManager()  # graph manager to store info of exchanges
 graphManager.LoadData(pathData)  # load data from ymal file

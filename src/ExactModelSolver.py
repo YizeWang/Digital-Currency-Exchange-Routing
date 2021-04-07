@@ -11,7 +11,7 @@ class ExactModelSolver:
         self.__model = gp.Model("Exact Model Solver")
         self.__model.Params.NonConvex = 2
         self.__model.Params.OutputFlag = verbose
-        self.__M = 1e3
+        self.__M = 1e2
         self.__timeSetup = None
         self.__timeOptimization = None
         self.__verbose = verbose
@@ -37,18 +37,13 @@ class ExactModelSolver:
 
     # add upper bound constraint to improve solving time
     def __AddUpperBound(self) -> None:
-        totalStocks = {currency: 0.0 for currency in self.__G.GetCurrencies()}
+        exchanges = self.__G.GetExchanges()
+        currencies = self.__G.GetCurrencies()
+        midCurrencies = self.__G.GetMidCurrencies()
+        self.__model.addConstrs(self.__X[self.__G.GetInitCurrency(), j, k] <= self.__G.GetT0() for j in currencies for k in exchanges)
+        self.__model.addConstrs(gp.quicksum(self.__X[i, j, k] for j in midCurrencies for k in exchanges) <= gp.quicksum(self.__G.GetStock(k, i) for k in exchanges) for i in midCurrencies)
 
-        # collect global stock of currencies
-        for exchange in self.__G.GetExchanges():
-            for currency in self.__G.GetCurrencies():
-                if currency != self.__G.GetInitCurrency():
-                    totalStocks[currency] = totalStocks[currency] + self.__G.GetStock(exchange, currency)
-
-        self.__model.addConstrs(self.__X[self.__G.GetInitCurrency(), j, k] <= self.__G.GetT0()                                           for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
-        self.__model.addConstrs(self.__X[i, j, k] <= totalStocks[i] for i in self.__G.GetCurrencies() if i != self.__G.GetInitCurrency() for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
-        self.__model.addConstrs(self.__F[i, j, k] <= totalStocks[j] for i in self.__G.GetCurrencies()                                    for j in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
-
+    # set objective function
     def __SetObjective(self) -> None:
         obj = gp.quicksum(self.__F[i, self.__G.GetTermCurrency(), k] for i in self.__G.GetCurrencies() for k in self.__G.GetExchanges())
         self.__model.setObjective(obj, sense=GRB.MAXIMIZE)
@@ -76,7 +71,7 @@ class ExactModelSolver:
 
     # flow into a currency must be the same as flow out of it
     def __SetConservationConstraint(self) -> None:
-        midCurrencies = (currency for currency in self.__G.GetCurrencies() if currency not in (self.__G.GetInitCurrency(), self.__G.GetTermCurrency()))  # all currencies except initial and terminal ones
+        midCurrencies = self.__G.GetMidCurrencies()
         self.__model.addConstrs(gp.quicksum(self.__F[i, j, k] for i in self.__G.GetCurrencies() for k in self.__G.GetExchanges()) ==
                                 gp.quicksum(self.__X[j, i, k] for i in self.__G.GetCurrencies() for k in self.__G.GetExchanges()) for j in midCurrencies)
         self.__model.addConstrs(gp.quicksum(self.__X[j, j, k] for k in self.__G.GetExchanges()) == 0 for j in self.__G.GetCurrencies())
