@@ -34,7 +34,7 @@ for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
         GM.SetInitCurrencyQuantity(1.0)
 
         EMS = ExactModelSolver(GM, verbose=verbose)
-        EMS.SetMIPGap(2e-2)
+        EMS.SetMIPGap(5e-2)
         EMS.Update()
         EMS.Optimize()
         
