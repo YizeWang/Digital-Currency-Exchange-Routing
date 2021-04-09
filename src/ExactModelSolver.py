@@ -38,9 +38,7 @@ class ExactModelSolver:
     # add upper bound constraint to improve solving time
     def __AddUpperBound(self) -> None:
         exchanges = self.__G.GetExchanges()
-        currencies = self.__G.GetCurrencies()
         midCurrencies = self.__G.GetMidCurrencies()
-        self.__model.addConstrs(self.__X[self.__G.GetInitCurrency(), j, k] <= self.__G.GetT0() for j in currencies for k in exchanges)
         self.__model.addConstrs(gp.quicksum(self.__X[i, j, k] for j in midCurrencies for k in exchanges) <= gp.quicksum(self.__G.GetStock(k, i) for k in exchanges) for i in midCurrencies)
 
     # set objective function
@@ -99,7 +97,7 @@ class ExactModelSolver:
         self.__SetTermCurrencyConstraint()
         self.__SetConservationConstraint()
         # self.__SetProcessingFeeConstraint()
-        self.__SetYConstraint()
+        # self.__SetYConstraint()
         self.__SetCycleEliminationConstraint()
         self.__timeSetup = time.time() - timeStart
 
