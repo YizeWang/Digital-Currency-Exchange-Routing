@@ -97,7 +97,7 @@ class ExactModelSolver:
         self.__SetTermCurrencyConstraint()
         self.__SetConservationConstraint()
         # self.__SetProcessingFeeConstraint()
-        # self.__SetYConstraint()
+        self.__SetYConstraint()
         self.__SetCycleEliminationConstraint()
         self.__timeSetup = time.time() - timeStart
 
