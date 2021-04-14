@@ -3,10 +3,10 @@ from ExactModelSolver import ExactModelSolver
 
 
 verbose = True  # print verbose log or not
-pathData = 'src\\Cases\\DataCase1.ymal'
+pathData = 'src\\Cases\\DataCase1.yaml'
 
 graphManager = GraphManager()  # graph manager to store info of exchanges
-graphManager.LoadData(pathData)  # load data from ymal file
+graphManager.LoadData(pathData)  # load data from yaml file
 graphManager.SetInitCurrency('o')  # set initial currency
 graphManager.SetTermCurrency('d')  # set terminal currency
 graphManager.SetInitCurrencyQuantity(1.0)  # set quantity of initial currency

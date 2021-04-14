@@ -19,7 +19,7 @@ timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col:
 for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
     for numExchanges in range(minNumExchanges, maxNumExchanges+1):
         
-        pathData = 'src\\TestData\\TestData' + 'E' + str(numExchanges) + 'C' + str(numCurrencies) + '.ymal'
+        pathData = 'src\\TestData\\TestData' + 'E' + str(numExchanges) + 'C' + str(numCurrencies) + '.yaml'
 
         SDG = SampleDataGenerator()
         SDG.SetNumCurrencies(numCurrencies)
