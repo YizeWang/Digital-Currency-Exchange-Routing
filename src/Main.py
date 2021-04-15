@@ -13,6 +13,7 @@ graphManager.SetInitCurrency('o')  # set initial currency
 graphManager.SetTermCurrency('d')  # set terminal currency
 graphManager.SetInitCurrencyQuantity(1.0)  # set quantity of initial currency
 graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
+graphManager.PrintIndcies()
 
 # exactModelSolver = ExactModelSolver(graphManager, verbose=verbose)
 # exactModelSolver.SetMIPGap(1e-4)  # set MIPGap parameter for gurobi model
@@ -23,9 +24,7 @@ graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
 
 SM = SLSQPManager(graphManager)
 
-
-
-v = np.ones(18)
+v = np.zeros(18)
 print(SM.FlowConservation(v))
 print(SM.FlowConservationJacobian(v))
 

@@ -8,13 +8,12 @@ class SLSQPManager:
         self.__graphManager = graphManager
         self.__N = graphManager.GetNumCurrencies()
         self.__K = graphManager.GetNumExchanges()
-        pass
 
     def __GetInd(self, i: str, j: str, k: str) -> int:
         i = self.__graphManager.Currency2Index(i)
         j = self.__graphManager.Currency2Index(j)
         k = self.__graphManager.Exchange2Index(k)
-        return k * self.__N * self.__N + j ** self.__N + i
+        return k * self.__N * self.__N + j * self.__N + i
 
     def FlowConservation(self, v: np.array) -> np.array:
         GetInd = self.__GetInd
