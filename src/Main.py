@@ -5,7 +5,7 @@ import numpy as np
 
 
 verbose = True  # print verbose log or not
-pathData = 'src\\Cases\\DataCase2.yaml'
+pathData = 'src\\Cases\\DataCase3.yaml'
 
 graphManager = GraphManager()  # graph manager to store info of exchanges
 graphManager.LoadData(pathData)  # load data from yaml file
@@ -13,8 +13,6 @@ graphManager.SetInitCurrency('o')  # set initial currency
 graphManager.SetTermCurrency('d')  # set terminal currency
 graphManager.SetInitCurrencyQuantity(1.0)  # set quantity of initial currency
 graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
-graphManager.PrintIndcies()
-
 # exactModelSolver = ExactModelSolver(graphManager, verbose=verbose)
 # exactModelSolver.SetMIPGap(1e-4)  # set MIPGap parameter for gurobi model
 # exactModelSolver.Update()  # add constraints to optimization model
@@ -23,9 +21,6 @@ graphManager.PrintIndcies()
 # exactModelSolver.OutputResult()  # print results
 
 SM = SLSQPManager(graphManager)
-
-v = np.zeros(18)
-print(SM.FlowConservation(v))
-print(SM.FlowConservationJacobian(v))
+SM.SLSQP()
 
 pass

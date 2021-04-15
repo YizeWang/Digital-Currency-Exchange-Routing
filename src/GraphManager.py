@@ -47,8 +47,8 @@ class GraphManager:
         self.__exchanges = {}
         self.__currencies = set()
         self.__T0 = None
-        self.__indExchange = {}
-        self.__indCurrency = {}
+        self.indExchange = {}
+        self.indCurrency = {}
 
     def GetNumCurrencies(self) -> int:
         return self.__numCurrencies
@@ -132,13 +132,13 @@ class GraphManager:
 
     def __AssignIndices(self) -> None:
         for indCurrency, currency in enumerate(self.GetCurrencies()):
-            self.__indCurrency[currency] = indCurrency
+            self.indCurrency[currency] = indCurrency
 
         for indExchange, exchange in enumerate(self.GetExchanges()):
-            self.__indExchange[exchange] = indExchange
+            self.indExchange[exchange] = indExchange
 
     def Currency2Index(self, currency: str) -> int:
-        return self.__indCurrency[currency]
+        return self.indCurrency[currency]
 
     def Exchange2Index(self, exchange: str) -> int:
-        return self.__indExchange[exchange]
+        return self.indExchange[exchange]

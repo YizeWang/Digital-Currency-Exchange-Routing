@@ -8,9 +8,9 @@ from SampleDataGenerator import SampleDataGenerator
 verbose = True
 if not os.path.exists('src\\TestData\\'): os.mkdir('src\\TestData\\')
 
-minNumCurrencies = 2  # at least 2
+minNumCurrencies = 10  # at least 2
 maxNumCurrencies = 10
-minNumExchanges = 1  # at least 1
+minNumExchanges = 10  # at least 1
 maxNumExchanges = 10
 
 timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col: exchange; key: time consumed
