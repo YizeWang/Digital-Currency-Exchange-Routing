@@ -1,9 +1,11 @@
 from GraphManager import GraphManager
 from ExactModelSolver import ExactModelSolver
+from SLSQP import SLSQPManager
+import numpy as np
 
 
 verbose = True  # print verbose log or not
-pathData = 'src\\Cases\\DataCase1.yaml'
+pathData = 'src\\Cases\\DataCase2.yaml'
 
 graphManager = GraphManager()  # graph manager to store info of exchanges
 graphManager.LoadData(pathData)  # load data from yaml file
@@ -12,11 +14,19 @@ graphManager.SetTermCurrency('d')  # set terminal currency
 graphManager.SetInitCurrencyQuantity(1.0)  # set quantity of initial currency
 graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
 
-exactModelSolver = ExactModelSolver(graphManager, verbose=verbose)
-exactModelSolver.SetMIPGap(1e-4)  # set MIPGap parameter for gurobi model
-exactModelSolver.Update()  # add constraints to optimization model
-exactModelSolver.Export('Model.mps')  # export model information
-exactModelSolver.Optimize()  # solve optimization model
-exactModelSolver.OutputResult()  # print results
+# exactModelSolver = ExactModelSolver(graphManager, verbose=verbose)
+# exactModelSolver.SetMIPGap(1e-4)  # set MIPGap parameter for gurobi model
+# exactModelSolver.Update()  # add constraints to optimization model
+# exactModelSolver.Export('Model.mps')  # export model information
+# exactModelSolver.Optimize()  # solve optimization model
+# exactModelSolver.OutputResult()  # print results
+
+SM = SLSQPManager(graphManager)
+
+
+
+v = np.ones(18)
+print(SM.FlowConservation(v))
+print(SM.FlowConservationJacobian(v))
 
 pass
