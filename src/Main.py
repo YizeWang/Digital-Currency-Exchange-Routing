@@ -21,10 +21,10 @@ graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
 # exactModelSolver.Optimize()  # solve optimization model
 # exactModelSolver.OutputResult()  # print results
 
-v = np.array([0, 0, 0, 0.29703, 0, 0.0717056, 0.144817, 0, 0, 0, 0, 0,0.373204, 0, 0.090211, 0.18495, 0, 0])
+# v = np.array([0, 0, 0, 0.29703, 0, 0.0717056, 0.144817, 0, 0, 0, 0, 0,0.373204, 0, 0.090211, 0.18495, 0, 0])  # globally optimal solution for case 2
 
 SM = SLSQPManager(graphManager)
-SM.AddInitPoint(v)
+SM.AddInitPoint()
 SM.SLSQP(verbose=True)
 
 pass

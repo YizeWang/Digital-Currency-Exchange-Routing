@@ -166,7 +166,7 @@ class SLSQPManager:
             result = minimize(self.Objective, initPoint, method='SLSQP', jac=self.Jacobian,
                               constraints=[initCurrencyConstraint, termCurrencyConstraint,
                                            selfExchangeConstraint, flowConservationConstraint],
-                              options={'ftol': 1e-9, 'disp': verbose},
+                              options={'ftol': 1e-6, 'disp': verbose},
                               bounds=bounds)
 
             if not result.success:
@@ -182,11 +182,12 @@ class SLSQPManager:
             X = np.round(result.x, decimals=4)
             XList = {'X('+str(i)+', '+str(j)+', '+str(k)+')': X[self.__GetInd(i, j, k)] for i in currencies for j in currencies for k in exchanges}
 
-            writer = csv.writer(open("Result.csv", "w"))
+            writer = csv.writer(open("SLSQP Result.csv", "w"))
             for key, value in XList.items():
                 writer.writerow([key, value])
 
         return result.success
 
-    def AddInitPoint(self, v: np.array) -> None:
+    def AddInitPoint(self, v: np.array=None) -> None:
+        if v is None: v = np.zeros(self.__N*self.__N*self.__K)
         self.__initPoints.append(v)
