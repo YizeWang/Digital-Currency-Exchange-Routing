@@ -1,7 +1,8 @@
-from GraphManager import GraphManager
-import numpy as np
-from scipy.optimize import minimize, Bounds
 import csv
+import time
+import numpy as np
+from GraphManager import GraphManager
+from scipy.optimize import minimize, Bounds
 
 
 class SLSQPManager:
@@ -10,7 +11,9 @@ class SLSQPManager:
         self.__graphManager = graphManager
         self.__N = graphManager.GetNumCurrencies()
         self.__K = graphManager.GetNumExchanges()
+        self.__initPoints = []
 
+    # convert str index to int index
     def __GetInd(self, i: str, j: str, k: str) -> int:
         i = self.__graphManager.Currency2Index(i)
         j = self.__graphManager.Currency2Index(j)
@@ -20,8 +23,8 @@ class SLSQPManager:
     def FlowConservation(self, v: np.array) -> np.array:
         GetInd = self.__GetInd
         GetStock = self.__graphManager.GetStock
-        currencies = self.__graphManager.GetCurrencies()
         exchanges = self.__graphManager.GetExchanges()
+        currencies = self.__graphManager.GetCurrencies()
 
         M = np.array([])
 
@@ -36,16 +39,17 @@ class SLSQPManager:
         Jac = np.zeros((0, self.__N*self.__N*self.__K))
 
         for j in self.__graphManager.GetMidCurrencies():
-            rowJac = np.zeros((1, self.__N*self.__N*self.__K))
+            rowJac = np.zeros(self.__N*self.__N*self.__K)
             for i in self.__graphManager.GetCurrencies():
                 for k in self.__graphManager.GetExchanges():
                     numerator = self.__graphManager.GetStock(k, i) * self.__graphManager.GetStock(k, j)
                     denominator = (self.__graphManager.GetStock(k, i) + v[self.__GetInd(i, j, k)]) ** 2
-                    rowJac[0, self.__GetInd(i, j, k)] = numerator / denominator
-                    rowJac[0, self.__GetInd(j, i, k)] = -1
+                    rowJac[self.__GetInd(i, j, k)] = numerator / denominator
+                    rowJac[self.__GetInd(j, i, k)] = -1
             Jac = np.vstack((Jac, rowJac))
 
         return Jac
+
 
     def InitCurrencyConstraint(self, v: np.array) ->np.array:
         initCurrency = self.__graphManager.GetInitCurrency()
@@ -90,11 +94,11 @@ class SLSQPManager:
     def TermCurrencyConstraintJacobian(self, v: np.array) -> np.array:
         termCurrency = self.__graphManager.GetTermCurrency()
 
-        Jac = np.zeros((1, self.__N*self.__N*self.__K))
+        Jac = np.zeros(self.__N*self.__N*self.__K)
 
         for j in self.__graphManager.GetCurrencies():
             for k in self.__graphManager.GetExchanges():
-                Jac[0, self.__GetInd(termCurrency, j, k)] = 1
+                Jac[self.__GetInd(termCurrency, j, k)] = 1
 
         return Jac
 
@@ -110,9 +114,9 @@ class SLSQPManager:
         Jac = np.zeros((0, self.__N*self.__N*self.__K))
 
         for j in self.__graphManager.GetCurrencies():
-            rowJac = np.zeros((1, self.__N*self.__N*self.__K))
+            rowJac = np.zeros(self.__N*self.__N*self.__K)
             for k in self.__graphManager.GetExchanges():
-                rowJac[0, self.__GetInd(j, j, k)] = 1
+                rowJac[self.__GetInd(j, j, k)] = 1
             Jac = np.vstack((Jac, rowJac))
 
         return Jac
@@ -141,7 +145,7 @@ class SLSQPManager:
 
         return Jac
 
-    def SLSQP(self):
+    def SLSQP(self, verbose=True) -> bool:
         initCurrencyConstraint = {'type': 'eq',
                                   'fun': lambda v: self.InitCurrencyConstraint(v),
                                   'jac': lambda v: self.InitCurrencyConstraintJacobian(v)}
@@ -154,27 +158,35 @@ class SLSQPManager:
         flowConservationConstraint = {'type': 'eq',
                                       'fun': lambda v: self.FlowConservation(v),
                                       'jac': lambda v: self.FlowConservationJacobian(v)}
-
-        initTry = np.zeros(self.__N*self.__N*self.__K)
         bounds = Bounds(np.zeros(self.__N*self.__N*self.__K), np.full(self.__N*self.__N*self.__K, np.inf))
 
-        print('Model built, start to solve...')
-        result = minimize(self.Objective, initTry, method='SLSQP', jac=self.Jacobian,
-                          constraints=[initCurrencyConstraint, termCurrencyConstraint,
-                                       selfExchangeConstraint, flowConservationConstraint],
-                          options={'ftol': 1e-9, 'disp': True},
-                          bounds=bounds)
+        for initPoint in self.__initPoints:
+            print('Model built, start to solve...')
+            startTime = time.time()
+            result = minimize(self.Objective, initPoint, method='SLSQP', jac=self.Jacobian,
+                              constraints=[initCurrencyConstraint, termCurrencyConstraint,
+                                           selfExchangeConstraint, flowConservationConstraint],
+                              options={'ftol': 1e-9, 'disp': verbose},
+                              bounds=bounds)
 
-        print(result)
+            if not result.success:
+                print('Fail to solve the model: {}'.format(result.message))
+                return result.success
 
+            if verbose: print(result)
+            print("Solving time: {} seconds".format(time.time()-startTime))
 
-        currencies = self.__graphManager.GetCurrencies()
-        exchanges = self.__graphManager.GetExchanges()
+            currencies = self.__graphManager.GetCurrencies()
+            exchanges = self.__graphManager.GetExchanges()
 
-        X = np.round(result.x, decimals=4)
-        XList = {'X('+str(i)+', '+str(j)+', '+str(k)+')': X[self.__GetInd(i, j, k)] for i in currencies for j in currencies for k in exchanges}
-        print(XList)
+            X = np.round(result.x, decimals=4)
+            XList = {'X('+str(i)+', '+str(j)+', '+str(k)+')': X[self.__GetInd(i, j, k)] for i in currencies for j in currencies for k in exchanges}
 
-        writer = csv.writer(open("Result.csv", "w"))
-        for key, value in XList.items():
-            writer.writerow([key, value])
+            writer = csv.writer(open("Result.csv", "w"))
+            for key, value in XList.items():
+                writer.writerow([key, value])
+
+        return result.success
+
+    def AddInitPoint(self, v: np.array) -> None:
+        self.__initPoints.append(v)
