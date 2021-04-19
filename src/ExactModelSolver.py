@@ -113,9 +113,13 @@ class ExactModelSolver:
 
     # output optimization result
     def OutputResult(self) -> float:
-        if self.__model.status != GRB.OPTIMAL:
+   
+     if self.__model.status != GRB.INFEASIBLE:
             raise Exception("No feasible solution")
-
+            
+     if self.__model.status != GRB.OPTIMAL:
+            raise Exception("Optimal solution not found, error code: {}".format(self.__model.status))
+            
         if self.__verbose:
             for var in self.__model.getVars():
                 print('%s = %g' % (var.varName, var.x))
