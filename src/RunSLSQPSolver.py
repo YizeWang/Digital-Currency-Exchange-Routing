@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from SLSQP import SLSQPManager
 from GraphManager import GraphManager
@@ -5,7 +6,8 @@ from ExactModelSolver import ExactModelSolver
 
 
 verbose = True  # print verbose log or not
-pathData = 'src\\Cases\\DataCase3.yaml'
+pathData = 'src\\Cases\\DataCase2.yaml'
+if not os.path.exists('src\\Temp\\'): os.mkdir('src\\Temp\\')
 
 graphManager = GraphManager()  # graph manager to store info of exchanges
 graphManager.LoadData(pathData)  # load data from yaml file
@@ -19,5 +21,5 @@ graphManager.SetFeeLimit(float('inf'))  # default fee limit: infinite
 
 SM = SLSQPManager(graphManager)
 SM.AddInitPoint()
-SM.Optimize(verbose=True)
+SM.Optimize(verbose=False)
 SM.OutputResult('src\\Temp\\Result.txt')

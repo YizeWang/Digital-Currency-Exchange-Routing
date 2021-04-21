@@ -116,7 +116,7 @@ class ExactModelSolver:
         if self.__model.status != GRB.OPTIMAL:
             raise Exception("No feasible solution")
 
-        with open (pathResult, 'w') as f:
+        with open(pathResult, 'w') as f:
             f.write('Optimal objective: {} {}\n'.format(self.__model.objVal, self.__G.GetTermCurrency()))
             f.write('Modeling time: {} seconds\n'.format(self.__timeSetup))
             f.write('Solving time: {} seconds\n'.format(self.__timeOptimization))

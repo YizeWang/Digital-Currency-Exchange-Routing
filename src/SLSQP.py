@@ -14,8 +14,10 @@ class SLSQPManager:
         self.__initPoints = []
         self.__result = None
         self.__timeOptimization = None
+        self.__numDecisionVariable = self.__N * self.__N * self.__K
+        self.__precision = 1e-8
 
-    # convert str index to int index
+    # convert str index to int index (for X)
     def __GetInd(self, i: str, j: str, k: str) -> int:
         i = self.__G.Currency2Index(i)
         j = self.__G.Currency2Index(j)
@@ -23,25 +25,23 @@ class SLSQPManager:
         return k * self.__N * self.__N + j * self.__N + i
 
     def FlowConservation(self, v: np.array) -> np.array:
-        GetInd = self.__GetInd
-        GetStock = self.__G.GetStock
         exchanges = self.__G.GetExchanges()
         currencies = self.__G.GetCurrencies()
 
-        M = np.array([])
+        Mat = np.array([])
 
         for j in self.__G.GetMidCurrencies():
-            inFlow = sum((GetStock(k, j)*v[GetInd(i, j, k)])/(GetStock(k, i)+v[GetInd(i, j, k)]) for i in currencies for k in exchanges)
-            outFlow = sum(v[GetInd(j, i, k)] for i in currencies for k in exchanges)
-            M = np.append(M, inFlow-outFlow)
+            inFlow = sum((self.__G.GetStock(k, j)*v[self.__GetInd(i, j, k)])/(self.__G.GetStock(k, i)+v[self.__GetInd(i, j, k)]) for i in currencies for k in exchanges)
+            outFlow = sum(v[self.__GetInd(j, i, k)] for i in currencies for k in exchanges)
+            Mat = np.append(Mat, inFlow-outFlow)
 
-        return M
+        return Mat
 
     def FlowConservationJacobian(self, v: np.array) -> np.array:
-        Jac = np.zeros((0, self.__N*self.__N*self.__K))
+        Jac = np.zeros((0, self.__numDecisionVariable))
 
         for j in self.__G.GetMidCurrencies():
-            rowJac = np.zeros(self.__N*self.__N*self.__K)
+            rowJac = np.zeros(self.__numDecisionVariable)
             for i in self.__G.GetCurrencies():
                 for k in self.__G.GetExchanges():
                     numerator = self.__G.GetStock(k, i) * self.__G.GetStock(k, j)
@@ -51,7 +51,6 @@ class SLSQPManager:
             Jac = np.vstack((Jac, rowJac))
 
         return Jac
-
 
     def InitCurrencyConstraint(self, v: np.array) ->np.array:
         initCurrency = self.__G.GetInitCurrency()
@@ -71,7 +70,7 @@ class SLSQPManager:
     def InitCurrencyConstraintJacobian(self, v: np.array) -> np.array:
         initCurrency = self.__G.GetInitCurrency()
 
-        Jac = np.zeros((2, self.__N*self.__N*self.__K))
+        Jac = np.zeros((2, self.__numDecisionVariable))
 
         for i in self.__G.GetCurrencies():
             for k in self.__G.GetExchanges():
@@ -96,7 +95,7 @@ class SLSQPManager:
     def TermCurrencyConstraintJacobian(self, v: np.array) -> np.array:
         termCurrency = self.__G.GetTermCurrency()
 
-        Jac = np.zeros(self.__N*self.__N*self.__K)
+        Jac = np.zeros(self.__numDecisionVariable)
 
         for j in self.__G.GetCurrencies():
             for k in self.__G.GetExchanges():
@@ -105,18 +104,18 @@ class SLSQPManager:
         return Jac
 
     def SelfExchangeConstraint(self, v: np.array) -> np.array:
-        M = np.array([])
+        Mat = np.array([])
 
         for j in self.__G.GetCurrencies():
-            M = np.append(M, sum(v[self.__GetInd(j, j, k)] for k in self.__G.GetExchanges()))
+            Mat = np.append(Mat, sum(v[self.__GetInd(j, j, k)] for k in self.__G.GetExchanges()))
 
-        return M
+        return Mat
 
     def SelfExchangeConstraintJacobian(self, v: np.array) -> np.array:
-        Jac = np.zeros((0, self.__N*self.__N*self.__K))
+        Jac = np.zeros((0, self.__numDecisionVariable))
 
         for j in self.__G.GetCurrencies():
-            rowJac = np.zeros(self.__N*self.__N*self.__K)
+            rowJac = np.zeros(self.__numDecisionVariable)
             for k in self.__G.GetExchanges():
                 rowJac[self.__GetInd(j, j, k)] = 1
             Jac = np.vstack((Jac, rowJac))
@@ -136,7 +135,7 @@ class SLSQPManager:
         return objective
 
     def Jacobian(self, v: np.array) -> np.array:
-        Jac = np.zeros(self.__N*self.__N*self.__K)
+        Jac = np.zeros(self.__numDecisionVariable)
         termCurrency = self.__G.GetTermCurrency()
 
         for i in self.__G.GetCurrencies():
@@ -148,37 +147,38 @@ class SLSQPManager:
         return Jac
 
     def Optimize(self, verbose=True) -> bool:
-        initCurrencyConstraint = {'type': 'eq',
-                                  'fun': lambda v: self.InitCurrencyConstraint(v),
-                                  'jac': lambda v: self.InitCurrencyConstraintJacobian(v)}
-        termCurrencyConstraint = {'type': 'eq',
-                                  'fun': lambda v: self.TermCurrencyConstraint(v),
-                                  'jac': lambda v: self.TermCurrencyConstraintJacobian(v)}
-        selfExchangeConstraint = {'type': 'eq',
-                                  'fun': lambda v: self.SelfExchangeConstraint(v),
-                                  'jac': lambda v: self.SelfExchangeConstraintJacobian(v)}
+        initCurrencyConstraint =     {'type': 'eq',
+                                      'fun': lambda v: self.InitCurrencyConstraint(v),
+                                      'jac': lambda v: self.InitCurrencyConstraintJacobian(v)}
+        termCurrencyConstraint =     {'type': 'eq',
+                                      'fun': lambda v: self.TermCurrencyConstraint(v),
+                                      'jac': lambda v: self.TermCurrencyConstraintJacobian(v)}
+        selfExchangeConstraint =     {'type': 'eq',
+                                      'fun': lambda v: self.SelfExchangeConstraint(v),
+                                      'jac': lambda v: self.SelfExchangeConstraintJacobian(v)}
         flowConservationConstraint = {'type': 'eq',
                                       'fun': lambda v: self.FlowConservation(v),
                                       'jac': lambda v: self.FlowConservationJacobian(v)}
-        bounds = Bounds(np.zeros(self.__N*self.__N*self.__K), np.full(self.__N*self.__N*self.__K, np.inf))
+        bounds = Bounds(np.zeros(self.__numDecisionVariable), np.full(self.__numDecisionVariable, np.inf))
+
+        startTime = time.time()
 
         for initPoint in self.__initPoints:
-            print('Model built, start to solve...')
-            startTime = time.time()
             self.__result = minimize(self.Objective, initPoint, method='SLSQP', jac=self.Jacobian,
-                                     constraints=[initCurrencyConstraint, termCurrencyConstraint,
-                                     selfExchangeConstraint, flowConservationConstraint],
-                                     options={'ftol': 1e-6, 'disp': verbose},
-                                     bounds=bounds)
+                                        constraints=[initCurrencyConstraint, termCurrencyConstraint,
+                                        selfExchangeConstraint, flowConservationConstraint],
+                                        options={'ftol': 1e-6, 'disp': verbose},
+                                        bounds=bounds)
 
             if not self.__result.success:
                 print('Fail to solve the model: {}'.format(self.__result.message))
-            self.__timeOptimization = time.time() - startTime
+            
+        self.__timeOptimization = time.time() - startTime
 
         return self.__result.success
 
     def AddInitPoint(self, v: np.array=None) -> None:
-        if v is None: v = np.zeros(self.__N*self.__N*self.__K)
+        if v is None: v = np.zeros(self.__numDecisionVariable)
         self.__initPoints.append(v)
 
     def OutputResult(self, pathResult: str) -> float:
@@ -188,10 +188,23 @@ class SLSQPManager:
         exchanges = self.__G.GetExchanges()
         currencies = self.__G.GetCurrencies()
 
-        values = np.round(self.__result.x, decimals=4)
-
-        with open (pathResult, 'w') as f:
+        with open(pathResult, 'w') as f:
             f.write('Optimal objective: {} {}\n'.format(self.__result.fun, self.__G.GetTermCurrency()))
             f.write('Number of decision variables: {}\n'.format(len(self.__result.x)))
+
+            f.write('\nValues of non-zero decision variables:\n')
+            for i in currencies:
+                for j in currencies:
+                    for k in exchanges:
+                        value = np.round(self.__result.x[self.__GetInd(i, j, k)], decimals=4)
+                        if value == 0.0: continue
+                        f.write('X[{}, {}, {}] = {}\n'.format(i, j, k, value))
+
+            f.write('\nValues of all decision variables:\n')
+            for i in currencies:
+                for j in currencies:
+                    for k in exchanges:
+                        value = np.round(self.__result.x[self.__GetInd(i, j, k)], decimals=4)
+                        f.write('X[{}, {}, {}] = {}\n'.format(i, j, k, value))
         
         return self.__timeOptimization
