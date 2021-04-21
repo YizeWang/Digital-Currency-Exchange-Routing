@@ -145,9 +145,4 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-TempTimeTable*
-TempData*
-TestData*
-TestData/
-Model.mps
-SLSQP Result.csv
+Temp/

@@ -6,12 +6,14 @@ from SampleDataGenerator import SampleDataGenerator
 
 
 verbose = True
-if not os.path.exists('src\\TestData\\'): os.mkdir('src\\TestData\\')
+if not os.path.exists('src\\Temp\\'): os.mkdir('src\\Temp\\')
 
-minNumCurrencies = 10  # at least 2
-maxNumCurrencies = 10
-minNumExchanges = 10  # at least 1
-maxNumExchanges = 10
+minNumCurrencies = 2  # at least 2
+maxNumCurrencies = 4
+minNumExchanges = 1  # at least 1
+maxNumExchanges = 4
+
+MIPGap = 5e-2  # relative MIP optimality gap for gurobi
 
 timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col: exchange; key: time consumed
 
@@ -19,7 +21,8 @@ timeTable = np.zeros((maxNumCurrencies, maxNumExchanges))  # row: currency; col:
 for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
     for numExchanges in range(minNumExchanges, maxNumExchanges+1):
         
-        pathData = 'src\\TestData\\TestData' + 'E' + str(numExchanges) + 'C' + str(numCurrencies) + '.yaml'
+        label = 'E' + str(numExchanges) + 'C' + str(numCurrencies)
+        pathData = 'src\\Temp\\Data' + label + '.yaml'
 
         SDG = SampleDataGenerator()
         SDG.SetNumCurrencies(numCurrencies)
@@ -34,9 +37,9 @@ for numCurrencies in range(minNumCurrencies, maxNumCurrencies+1):
         GM.SetInitCurrencyQuantity(1.0)
 
         EMS = ExactModelSolver(GM, verbose=verbose)
-        EMS.SetMIPGap(5e-2)
+        EMS.SetMIPGap(MIPGap)
         EMS.Update()
         EMS.Optimize()
         
-        timeTable[numCurrencies-1, numExchanges-1] = EMS.OutputResult()
-        np.savetxt("src\\TestData\\TempTimeTable.csv", timeTable, delimiter=',')
+        timeTable[numCurrencies-1, numExchanges-1] = EMS.OutputResult('src\\Temp\\Result'+label+'txt')
+        np.savetxt("src\\Temp\\TimeTable.csv", timeTable, delimiter=',')  # save time table after each iteration

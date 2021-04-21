@@ -108,23 +108,27 @@ class ExactModelSolver:
         self.__timeOptimization = time.time() - timeStart
 
     # export model information
-    def Export(self, pathExport: str) -> None:
+    def OutputModel(self, pathExport: str) -> None:
         self.__model.write(pathExport)
 
     # output optimization result
-    def OutputResult(self) -> float:
+    def OutputResult(self, pathResult: str) -> float:
         if self.__model.status != GRB.OPTIMAL:
             raise Exception("No feasible solution")
 
-        if self.__verbose:
-            for var in self.__model.getVars():
-                print('%s = %g' % (var.varName, var.x))
+        with open (pathResult, 'w') as f:
+            f.write('Optimal objective: {} {}\n'.format(self.__model.objVal, self.__G.GetTermCurrency()))
+            f.write('Modeling time: {} seconds\n'.format(self.__timeSetup))
+            f.write('Solving time: {} seconds\n'.format(self.__timeOptimization))
+            f.write('Number of decision variables: {}\n'.format(len(self.__model.getVars())))
 
-            self.__model.printStats()
-        
-        print('Optimal objective: {} {}'.format(self.__model.objVal, self.__G.GetTermCurrency()))
-        print('Modeling time: {} seconds'.format(self.__timeSetup))
-        print('Solving time: {} seconds'.format(self.__timeOptimization))
-        print('Number of decision variables: {}'.format(len(self.__model.getVars())))
+            f.write('\nValues of non-zero decision variables:\n')
+            for var in self.__model.getVars():
+                if var.x == 0 : continue
+                f.write('%s = %g\n' % (var.varName, var.x))
+            
+            f.write('\nValues of all decision variables:\n')
+            for var in self.__model.getVars():
+                f.write('%s = %g\n' % (var.varName, var.x))
         
         return self.__timeOptimization
