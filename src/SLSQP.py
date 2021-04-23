@@ -15,7 +15,11 @@ class SLSQPManager:
         self.__result = None
         self.__timeOptimization = None
         self.__numDecisionVariable = self.__N * self.__N * self.__K
-        self.__precision = 1e-8
+        self.__tolerance = 1e-8
+
+    def SetTolerance(self, tolerance: float) -> None:
+        assert(tolerance > 0)
+        self.__tolerance = tolerance
 
     # convert str index to int index (for X)
     def __GetInd(self, i: str, j: str, k: str) -> int:
@@ -165,10 +169,10 @@ class SLSQPManager:
 
         for initPoint in self.__initPoints:
             self.__result = minimize(self.Objective, initPoint, method='SLSQP', jac=self.Jacobian,
-                                        constraints=[initCurrencyConstraint, termCurrencyConstraint,
-                                        selfExchangeConstraint, flowConservationConstraint],
-                                        options={'ftol': 1e-6, 'disp': verbose},
-                                        bounds=bounds)
+                                     constraints=[initCurrencyConstraint, termCurrencyConstraint,
+                                                  selfExchangeConstraint, flowConservationConstraint],
+                                     options={'ftol': self.__tolerance, 'disp': verbose},
+                                     bounds=bounds)
 
             if not self.__result.success:
                 print('Fail to solve the model: {}'.format(self.__result.message))
