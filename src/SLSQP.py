@@ -14,11 +14,16 @@ class SLSQPManager:
         self.__initPoints = []
         self.__result = None
         self.__timeOptimization = None
-        self.__numDecisionVariable = self.__N * self.__N * self.__K
+        self.__numX = self.__N * self.__N * self.__K
+        self.__numZ = self.__N * self.__N
+        self.__numDecisionVariable = self.__numX + self.__numZ
         self.__tolerance = 1e-8
+        self.__bigM = 1e2
 
     def SetTolerance(self, tolerance: float) -> None:
-        assert(tolerance > 0)
+        if tolerance > 0:
+            raise Exception('Invalid tolerance value: {}'.format(tolerance))
+
         self.__tolerance = tolerance
 
     # convert str index to int index (for X)
@@ -27,6 +32,11 @@ class SLSQPManager:
         j = self.__G.Currency2Index(j)
         k = self.__G.Exchange2Index(k)
         return k * self.__N * self.__N + j * self.__N + i
+
+    def __GetZInd(self, i: str, j: str) -> int:
+        i = self.__G.Currency2Index(i)
+        j = self.__G.Currency2Index(j)
+        return self.__numX + j * self.__N + i
 
     def FlowConservation(self, v: np.array) -> np.array:
         exchanges = self.__G.GetExchanges()
@@ -150,6 +160,50 @@ class SLSQPManager:
 
         return Jac
 
+    def AcyclicConstraint(self, v: np.array) -> np.array:  # todo: replace with linear constraint
+        Mat = np.zeros((0, self.__numDecisionVariable))
+
+        for i in self.__G.GetCurrencies():
+            for j in self.__G.GetCurrencies():
+                row = np.zeros((1, self.__numDecisionVariable))
+                row[0, self.__GetZInd(i, j)] = -1
+                for k in self.__G.GetExchanges():
+                    row[0, self.__GetInd(i, j, k)] = self.__bigM
+                Mat = np.vstack((Mat, row))
+
+        for i in self.__G.GetCurrencies():
+            for j in self.__G.GetCurrencies():
+                row = np.zeros((1, self.__numDecisionVariable))
+                row[0, self.__GetZInd(i, j)] = self.__bigM
+                for k in self.__G.GetExchanges():
+                    row[0, self.__GetInd(i, j, k)] = -1
+                Mat = np.vstack((Mat, row))
+
+        return Mat @ v
+
+
+    def AcyclicJacobian(self, v: np.array) -> np.array:
+        Jac = np.zeros((0, self.__numDecisionVariable))
+
+        for i in self.__G.GetCurrencies():
+            for j in self.__G.GetCurrencies():
+                row = np.zeros((1, self.__numDecisionVariable))
+                row[0, self.__GetZInd(i, j)] = -1
+                for k in self.__G.GetExchanges():
+                    row[0, self.__GetInd(i, j, k)] = self.__bigM
+                Jac = np.vstack((Jac, row))
+
+        for i in self.__G.GetCurrencies():
+            for j in self.__G.GetCurrencies():
+                row = np.zeros((1, self.__numDecisionVariable))
+                row[0, self.__GetZInd(i, j)] = self.__bigM
+                for k in self.__G.GetExchanges():
+                    row[0, self.__GetInd(i, j, k)] = -1
+                Jac = np.vstack((Jac, row))
+
+        return Jac
+
+
     def Optimize(self, verbose=True) -> bool:
         initCurrencyConstraint =     {'type': 'eq',
                                       'fun': lambda v: self.InitCurrencyConstraint(v),
@@ -163,14 +217,20 @@ class SLSQPManager:
         flowConservationConstraint = {'type': 'eq',
                                       'fun': lambda v: self.FlowConservation(v),
                                       'jac': lambda v: self.FlowConservationJacobian(v)}
-        bounds = Bounds(np.zeros(self.__numDecisionVariable), np.full(self.__numDecisionVariable, np.inf))
+        AcyclicConstraint =          {'type': 'ineq',
+                                      'fun': lambda v: self.AcyclicConstraint(v),
+                                      'jac': lambda v: self.AcyclicJacobian(v)}
+
+        lb = np.concatenate((np.zeros(self.__numX), np.zeros(self.__numZ)))
+        ub = np.concatenate((np.full(self.__numX, np.inf), np.ones(self.__numZ)))
+        bounds = Bounds(lb, ub)
 
         startTime = time.time()
 
         for initPoint in self.__initPoints:
             self.__result = minimize(self.Objective, initPoint, method='SLSQP', jac=self.Jacobian,
                                      constraints=[initCurrencyConstraint, termCurrencyConstraint,
-                                                  selfExchangeConstraint, flowConservationConstraint],
+                                                  selfExchangeConstraint, flowConservationConstraint, AcyclicConstraint],
                                      options={'ftol': self.__tolerance, 'disp': verbose},
                                      bounds=bounds)
 
@@ -204,11 +264,22 @@ class SLSQPManager:
                         if value == 0.0: continue
                         f.write('X[{}, {}, {}] = {}\n'.format(i, j, k, value))
 
+            for i in currencies:
+                for j in currencies:
+                        value = np.round(self.__result.x[self.__GetZInd(i, j)], decimals=4)
+                        if value == 0.0: continue
+                        f.write('Z[{}, {}] = {}\n'.format(i, j, value))
+
             f.write('\nValues of all decision variables:\n')
             for i in currencies:
                 for j in currencies:
                     for k in exchanges:
                         value = np.round(self.__result.x[self.__GetInd(i, j, k)], decimals=4)
                         f.write('X[{}, {}, {}] = {}\n'.format(i, j, k, value))
+
+            for i in currencies:
+                for j in currencies:
+                        value = np.round(self.__result.x[self.__GetZInd(i, j)], decimals=4)
+                        f.write('Z[{}, {}] = {}\n'.format(i, j, value))
         
         return self.__timeOptimization

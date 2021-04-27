@@ -6,7 +6,7 @@ from ExactModelSolver import ExactModelSolver
 
 
 verbose = True  # print verbose log or not
-pathData = 'src\\Cases\\DataCase2.yaml'
+pathData = 'src\\Cases\\DataCase3.yaml'
 if not os.path.exists('src\\Temp\\'): os.mkdir('src\\Temp\\')
 
 graphManager = GraphManager()  # graph manager to store info of exchanges
