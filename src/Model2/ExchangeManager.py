@@ -12,6 +12,10 @@ class ExchangeManager:
         self.__currencies = set()
         self.__midCurrencies = set()
         self.__dataFrame = None
+        self.__R = {('UNI',  'ETH'):  0.0085,
+                    ('USDC', 'ETH'):  0.0005,
+                    ('USDT', 'ETH'):  0.0005,
+                    ('USDT', 'USDC'): 1.0013}
 
     def GetO(self) -> str:
         return self.__initCurrency
@@ -50,6 +54,9 @@ class ExchangeManager:
         self.__termCurrency = termCurrency
         if not self.__initCurrency is None: self.__UpdateMidCurrencies()
 
+    def SetInitCurrencyQuantity(self, initCurrencyQuantity: float) -> None:
+        self.__initQuantity = initCurrencyQuantity
+        
     def GetV(self, currency1: str, currency2: str, exchange: str) -> float:
         queryCondition1 = 'Exchange=="{}" & Currency1=="{}" & Currency2=="{}"'.format(exchange, currency1, currency2)
         queryCondition2 = 'Exchange=="{}" & Currency2=="{}" & Currency1=="{}"'.format(exchange, currency1, currency2)
@@ -60,10 +67,14 @@ class ExchangeManager:
         if not query1.empty: return query1.Stock1.item()
         if not query2.empty: return query2.Stock2.item()
         
-        return 0.0
+        return -1  # if no pair exists
 
     def __UpdateMidCurrencies(self) -> None:
         self.__midCurrencies = set(currency for currency in self.__currencies if currency not in (self.GetO(), self.GetD()))
 
-    def SetInitCurrencyQuantity(self, initCurrencyQuantity: float) -> None:
-        self.__initQuantity = initCurrencyQuantity
+    def GetR(self, currency1: str, currency2: str) -> float:
+        if currency1 == currency2: return 1.0
+        if (currency1, currency2) in self.__R: return self.__R[(currency1, currency2)]
+        if (currency2, currency1) in self.__R: return 1 / self.__R[(currency2, currency1)]
+
+        return -1  # if two currencies cannot exchange
