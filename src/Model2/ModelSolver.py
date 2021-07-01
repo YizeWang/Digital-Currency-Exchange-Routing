@@ -19,16 +19,12 @@ class ModelSolver:
         self.__alpha = 1
         self.__beta = 1
         self.__timeOptimization = None
-        self.__doConsiderFee = True
 
     def SetG1(self, G1: float) -> None:
         self.__G1 = G1
 
     def SetG2(self, G2: float) -> None:
         self.__G2 = G2
-
-    def ConsiderFee(self, status: bool) -> None:
-        self.__doConsiderFee = status
 
     def SetNumDivision(self, numDivision: int) -> None:
         self.__P = numDivision
@@ -179,7 +175,6 @@ class ModelSolver:
         timeStart = time.time()
         self.__m.optimize()
         self.__timeOptimization = time.time() - timeStart
-        return self.__timeOptimization
 
     # export model information
     def ExportModel(self, pathExport: str) -> None:
@@ -230,3 +225,6 @@ class ModelSolver:
 
     def GetObjPlusG1Fee(self) -> float:
         return self.__m.objVal + self.__G1Fee.x
+
+    def GetOptTime(self) ->float:
+        return self.__timeOptimization

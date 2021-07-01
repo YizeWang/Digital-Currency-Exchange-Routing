@@ -11,7 +11,7 @@ EM.ImportData(pathData)
 EM.SetInitCurrency('UNI')
 EM.SetTermCurrency('USDT')
 numDivision = 3
-isRangeSmall = False  # True: T0 in [100, 1000], False: T0 in [1000, 10000]
+isRangeSmall = True  # True: T0 in [100, 1000], False: T0 in [1000, 10000]
 
 if isRangeSmall:
     T0List = [T0 for T0 in range( 100,  1000+1,  100)]
@@ -31,13 +31,13 @@ for P in range(1, numDivision+1, 1):
         EM.SetInitCurrencyQuantity(T0)
 
         MS = ModelSolver(EM, verbose=True)
-        MS.ConsiderFee(True)
         MS.SetNumDivision(P)
         MS.SetG1(43)
         MS.SetG2(0.003)
         MS.Update()
-        timeList[P-1, i] = MS.Optimize()
+        MS.Optimize()
 
+        timeList[P-1, i] = MS.GetOptTime()
         G1List[P-1, i] = MS.GetG1Fee()
         G2List[P-1, i] = MS.GetG2Fee()
         objList[P-1, i] = MS.GetObjective()
