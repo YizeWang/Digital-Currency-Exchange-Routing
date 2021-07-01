@@ -12,10 +12,10 @@ class ExchangeManager:
         self.__currencies = set()
         self.__midCurrencies = set()
         self.__dataFrame = None
-        self.__R = {('UNI',  'ETH'):  0.0085,
-                    ('USDC', 'ETH'):  0.0005,
-                    ('USDT', 'ETH'):  0.0005,
-                    ('USDT', 'USDC'): 1.0013}
+        self.__R = {('ETH',   'UNI'): 118.8405,
+                    ('ETH',  'USDC'): 2189,
+                    ('ETH',  'USDT'): 2191,
+                    ('USDT', 'USDC'): 0.9975}
 
     def GetO(self) -> str:
         return self.__initCurrency

@@ -12,15 +12,20 @@ class ModelSolver:
         self.__m.Params.NonConvex = 2
         self.__m.Params.OutputFlag = verbose
         self.__M = 1e4
-        self.__P = None
+        self.__P = 1
         self.__verbose = verbose
         self.__G1 = 43
         self.__G2 = 0.003
         self.__alpha = 1
-        self.__beta = 0.5
-        self.__scaleFactor = 1
+        self.__beta = 1
         self.__timeOptimization = None
         self.__doConsiderFee = True
+
+    def SetG1(self, G1: float) -> None:
+        self.__G1 = G1
+
+    def SetG2(self, G2: float) -> None:
+        self.__G2 = G2
 
     def ConsiderFee(self, status: bool) -> None:
         self.__doConsiderFee = status
@@ -37,6 +42,8 @@ class ModelSolver:
     def __DeclareDecisionVariables(self) -> None:
         self.__G = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="G")
         self.__X, self.__Y, self.__F, self.__U, self.__Z = {}, {}, {}, {}, {}
+        self.__G1Fee = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="G1Fee")
+        self.__G2Fee = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="G2Fee")
         
         for i in self.__EM.GetCurr():
             self.__U[i] = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="U({})".format(i))
@@ -89,8 +96,7 @@ class ModelSolver:
         m, X, Y, F, U, Z, G = self.__GetDecisionVariableAlias()
         EM, V, R, curr, exch, div, midCurr = self.__GetOtherAlias()
 
-        obj = a * gp.quicksum(F[i, d, k, p] for i in curr for k in exch for p in div)
-        if self.__doConsiderFee: obj = obj - b * self.__G
+        obj = a * gp.quicksum(F[i, d, k, p] for i in curr for k in exch for p in div) - b * G
         m.setObjective(obj, sense=GRB.MAXIMIZE)
 
     # flow into initial currency shoule be 0 (2) 
@@ -133,11 +139,13 @@ class ModelSolver:
         o, d, a, b, M = self.__GetConstantAlias()
         m, X, Y, F, U, Z, G = self.__GetDecisionVariableAlias()
         EM, V, R, curr, exch, div, midCurr = self.__GetOtherAlias()
-        G1 = self.__G1 / self.__scaleFactor
-        G2 = self.__G2
+        G1, G1Fee = self.__G1, self.__G1Fee
+        G2, G2Fee = self.__G2, self.__G2Fee
 
-        m.addConstr(G == G1 * gp.quicksum(R('USDC', d) * Y[i, j, k, p] for i in curr for j in curr for k in exch for p in div if R('USDC', d) != -1) + 
-                         G2 * gp.quicksum(R(i,      d) * X[i, j, k, p] for i in curr for j in curr for k in exch for p in div if R(i,      d) != -1))
+        m.addConstr(G == G1Fee + G2Fee)
+        m.addConstr(G1Fee == G1 * gp.quicksum(Y[i, j, k, p] for i in curr for j in curr for k in exch for p in div))
+        m.addConstr(G2Fee == G2 * gp.quicksum(R(j, d) * F[i, j, k, p] for i in curr for j in curr for k in exch for p in div if R(j, d) != -1))
+        # m.addConstr(G2Fee == G2 * gp.quicksum(R(i, d) * X[i, j, k, p] for i in curr for j in curr for k in exch for p in div if R(i, d) != -1))
 
     # linear big-M expression of binary variable Y (8) (9)
     def __SetYConstraint(self) -> None:
@@ -171,6 +179,7 @@ class ModelSolver:
         timeStart = time.time()
         self.__m.optimize()
         self.__timeOptimization = time.time() - timeStart
+        return self.__timeOptimization
 
     # export model information
     def ExportModel(self, pathExport: str) -> None:
@@ -178,6 +187,10 @@ class ModelSolver:
 
     # output optimization result
     def ExportResult(self, pathResult: str) -> float:
+        o, d, a, b, M = self.__GetConstantAlias()
+        m, X, Y, F, U, Z, G = self.__GetDecisionVariableAlias()
+        EM, V, R, curr, exch, div, midCurr = self.__GetOtherAlias()
+
         if self.__m.status != GRB.OPTIMAL:
             raise Exception("Optimal solution not found.")
 
@@ -186,6 +199,14 @@ class ModelSolver:
             f.write('Modeling time: {} seconds\n'.format(self.__timeSetup))
             f.write('Solving time: {} seconds\n'.format(self.__timeOptimization))
             f.write('Number of decision variables: {}\n'.format(len(self.__m.getVars())))
+
+            f.write('\nTransaction Strategy\n')
+            for i in curr:
+                for j in curr:
+                    for k in exch:
+                        for p in div:
+                            if X[i, j, k, p].x == 0: continue
+                            f.write('{:.2f} {} -> {:.2f} {} via {} by {}-div\n'.format(X[i, j, k, p].x, i, F[i, j, k, p].x, j, k, p))
 
             f.write('\nValues of non-zero decision variables:\n')
             for var in self.__m.getVars():
@@ -197,3 +218,15 @@ class ModelSolver:
                 f.write('%s = %g\n' % (var.varName, var.x))
         
         return self.__timeOptimization
+
+    def GetObjective(self) -> float:
+        return self.__m.objVal
+    
+    def GetG1Fee(self) -> float:
+        return self.__G1Fee.x
+
+    def GetG2Fee(self) -> float:
+        return self.__G2Fee.x
+
+    def GetObjPlusG1Fee(self) -> float:
+        return self.__m.objVal + self.__G1Fee.x
