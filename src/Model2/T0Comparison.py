@@ -26,7 +26,7 @@ G1List = np.zeros((numDivision, len(inchList)))
 G2List = np.zeros((numDivision, len(inchList)))
 timeList = np.zeros((numDivision, len(inchList)))
 
-for P in range(3, numDivision+1, 1):
+for P in range(1, numDivision+1, 1):
     for i, T0 in enumerate(T0List):
         EM.SetInitCurrencyQuantity(T0)
 
@@ -44,7 +44,7 @@ for P in range(3, numDivision+1, 1):
         objPlusG1List[P-1, i] = MS.GetObjPlusG1Fee()
 
 fig, ax = plt.subplots()
-for P in range(3, numDivision+1, 1):
+for P in range(1, numDivision+1, 1):
     ax.plot(T0List, objPlusG1List[P-1,:]/inchList, label='{} Div'.format(P))
 ax.set_xlim(xlim)
 ax.set_ylim(ylim)
@@ -62,4 +62,5 @@ np.savetxt('Result/G1List.csv', G1List, delimiter=',')
 np.savetxt('Result/G2List.csv', G2List, delimiter=',')
 np.savetxt('Result/timeList.csv', timeList, delimiter=',')
 
+plt.legend()
 plt.show()

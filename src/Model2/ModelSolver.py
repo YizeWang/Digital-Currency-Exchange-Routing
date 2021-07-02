@@ -47,9 +47,9 @@ class ModelSolver:
                 self.__Z[i, j] = self.__m.addVar(vtype=GRB.BINARY, name="Z({},{})".format(i, j))
                 for k in self.__EM.GetExch():
                     for p in range(self.__P):
-                        self.__X[i, j, k, p] = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="X({},{},{},{})".format(i, j, k, p))
-                        self.__F[i, j, k, p] = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="F({},{},{},{})".format(i, j, k, p))  # value of fraction
-                        self.__Y[i, j, k, p] = self.__m.addVar(vtype=GRB.BINARY,           name="Y({},{},{},{})".format(i, j, k, p))
+                        self.__X[i, j, k, p] = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="X({},{},{},Div{})".format(i, j, k, p))
+                        self.__F[i, j, k, p] = self.__m.addVar(vtype=GRB.CONTINUOUS, lb=0, name="F({},{},{},Div{})".format(i, j, k, p))  # value of fraction
+                        self.__Y[i, j, k, p] = self.__m.addVar(vtype=GRB.BINARY,           name="Y({},{},{},Div{})".format(i, j, k, p))
 
     # get aliases for decision variables
     def __GetDecisionVariableAlias(self) -> tuple:

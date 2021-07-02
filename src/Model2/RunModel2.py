@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from ModelSolver import *
 from ExchangeManager import *
@@ -24,4 +25,5 @@ G1 = MS.GetG1Fee()
 G2 = MS.GetG2Fee()
 obj = MS.GetObjective()
 objPlusG1 = MS.GetObjPlusG1Fee()
-MS.ExportResult('Result07011200.txt')
+if not os.path.exists('Result/'): os.mkdir('Result/')
+MS.ExportResult('Result/Result07011200.txt')
