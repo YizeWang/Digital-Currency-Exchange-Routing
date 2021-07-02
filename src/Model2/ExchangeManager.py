@@ -15,7 +15,9 @@ class ExchangeManager:
         self.__R = {('ETH',   'UNI'): 118.8405,
                     ('ETH',  'USDC'): 2189,
                     ('ETH',  'USDT'): 2191,
-                    ('USDT', 'USDC'): 0.9975}
+                    ('USDT', 'USDC'): 0.9975,
+                    ('UNI',  'USDT'): 17.58,
+                    ('UNI',  'USDC'): 17.54}
 
     def GetO(self) -> str:
         return self.__initCurrency
@@ -77,4 +79,4 @@ class ExchangeManager:
         if (currency1, currency2) in self.__R: return self.__R[(currency1, currency2)]
         if (currency2, currency1) in self.__R: return 1 / self.__R[(currency2, currency1)]
 
-        return -1  # if two currencies cannot exchange
+        raise Exception("No public rate between {} and {} found.".format(currency1, currency2))

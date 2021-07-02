@@ -140,8 +140,7 @@ class ModelSolver:
 
         m.addConstr(G == G1Fee + G2Fee)
         m.addConstr(G1Fee == G1 * gp.quicksum(Y[i, j, k, p] for i in curr for j in curr for k in exch for p in div))
-        m.addConstr(G2Fee == G2 * gp.quicksum(R(j, d) * F[i, j, k, p] for i in curr for j in curr for k in exch for p in div if R(j, d) != -1))
-        # m.addConstr(G2Fee == G2 * gp.quicksum(R(i, d) * X[i, j, k, p] for i in curr for j in curr for k in exch for p in div if R(i, d) != -1))
+        m.addConstr(G2Fee == G2 * gp.quicksum(R(i, d) * X[i, j, k, p] for i in curr for j in curr for k in exch for p in div))
 
     # linear big-M expression of binary variable Y (8) (9)
     def __SetYConstraint(self) -> None:
